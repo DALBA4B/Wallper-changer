@@ -1,5 +1,4 @@
 @echo off
-chcp 65001 >nul
 title Wallpaper Changer
 
 :menu
@@ -8,13 +7,13 @@ echo =====================================
 echo        WALLPAPER CHANGER
 echo =====================================
 echo.
-echo   1. –£—Å—Ç–∞–Ω–æ–≤–∫–∞
-echo   2. –°–º–µ–Ω–∏—Ç—å –ø–∞–ø–∫—É —Å –æ–±–æ—è–º–∏
-echo   3. –ü–µ—Ä–µ–Ω–µ—Å—Ç–∏ –ø—Ä–æ–≥—Ä–∞–º–º—É –≤ –¥—Ä—É–≥—É—é –ø–∞–ø–∫—É
-echo   4. –£–¥–∞–ª–∏—Ç—å
-echo   0. –í—ã—Ö–æ–¥
+echo   1. ì·‚†≠Æ¢™†
+echo   2. ë¨•≠®‚Ï Ø†Ø™„ · Æ°ÆÔ¨®
+echo   3. è•‡•≠•·‚® Ø‡Æ£‡†¨¨„ ¢ §‡„£„Ó Ø†Ø™„
+echo   4. ì§†´®‚Ï
+echo   0. ÇÎÂÆ§
 echo.
-set /p choice="–í—ã–±–µ—Ä–∏ –ø—É–Ω–∫—Ç: "
+set /p choice="ÇÎ°•‡® Ø„≠™‚: "
 
 if "%choice%"=="1" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install.ps1" & goto menu
 if "%choice%"=="2" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0manage.ps1" -Mode wallpapers & goto menu

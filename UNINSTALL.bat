@@ -1,4 +1,3 @@
 @echo off
-chcp 65001 >nul
-title Wallpaper Changer - ÑƒÐ´Ð°Ð»ÐµÐ½Ð¸Ðµ
+title Wallpaper Changer - ã¤ «¥­¨¥
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0uninstall.ps1"
