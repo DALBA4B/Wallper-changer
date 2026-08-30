@@ -18,6 +18,20 @@ if (-not (Test-Path (Join-Path $installDir "wallpaper.ps1"))) {
 Write-Host "Wallpaper Changer - удаление" -ForegroundColor Cyan
 Write-Host ""
 
+# Сначала подтверждение, потом любые действия
+Write-Host "Будет удалено:"
+Write-Host "  - ярлык автозагрузки"
+if (Test-Path (Join-Path $installDir "wallpaper.ps1")) {
+    Write-Host "  - файлы программы из '$installDir'"
+}
+Write-Host ""
+$answer = Read-Host "Удалить Wallpaper Changer? (Y/N)"
+if ($answer -notmatch "^[YyДд]") {
+    Write-Host "Отменено. Ничего не удалено." -ForegroundColor Yellow
+    pause
+    exit 0
+}
+
 # 1. Снимаем с автозагрузки
 $lnk = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\wallpaper.lnk"
 if (Test-Path $lnk) {
@@ -29,21 +43,16 @@ if (Test-Path $lnk) {
 
 # 2. Удаляем файлы программы
 if (Test-Path (Join-Path $installDir "wallpaper.ps1")) {
-    $answer = Read-Host "Удалить файлы программы из '$installDir'? (Y/N)"
-    if ($answer -match "^[YyДд]") {
-        # Удаляем через внешний bat, чтобы можно было стереть папку, из которой запущен скрипт
-        $cleanup = Join-Path $env:TEMP "wc_cleanup.bat"
-        @"
+    # Удаляем через внешний bat, чтобы можно было стереть папку, из которой запущен скрипт
+    $cleanup = Join-Path $env:TEMP "wc_cleanup.bat"
+    @"
 @echo off
 timeout /t 2 /nobreak >nul
 rd /s /q "$installDir"
 del /f /q "%~f0"
 "@ | Out-File $cleanup -Encoding ascii
-        Start-Process cmd.exe -ArgumentList "/c `"$cleanup`"" -WindowStyle Hidden
-        Write-Host "[OK] Файлы удаляются..." -ForegroundColor Green
-    } else {
-        Write-Host "Файлы оставлены на месте." -ForegroundColor Yellow
-    }
+    Start-Process cmd.exe -ArgumentList "/c `"$cleanup`"" -WindowStyle Hidden
+    Write-Host "[OK] Файлы удаляются..." -ForegroundColor Green
 } else {
     Write-Host "[--] Файлы программы не найдены в $installDir" -ForegroundColor DarkYellow
 }
