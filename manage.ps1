@@ -1,6 +1,12 @@
 ﻿# Управление Wallpaper Changer: смена папки обоев или перенос программы
 param([ValidateSet("wallpapers", "move")][string]$Mode)
 
+function Wait-Key {
+    Write-Host "Для продолжения нажми Enter..."
+    [void][System.Console]::ReadLine()
+    while ([System.Console]::KeyAvailable) { [void][System.Console]::ReadKey($true) }
+}
+
 Add-Type -AssemblyName System.Windows.Forms
 
 # Находим папку, куда установлена программа (по ярлыку автозагрузки)
@@ -29,24 +35,41 @@ function Select-Folder($Description) {
 $installDir = Get-InstallDir
 if (-not $installDir) {
     Write-Host "Программа не установлена. Сначала выбери пункт 1 (Установка)." -ForegroundColor Red
-    pause; exit 1
+    Wait-Key; exit 1
 }
 
 if ($Mode -eq "wallpapers") {
     $folder = Select-Folder "Выбери новую папку, ОТКУДА брать обои"
-    if (-not $folder) { Write-Host "Отменено."; pause; exit 1 }
+    if (-not $folder) { Write-Host "Отменено."; Wait-Key; exit 1 }
     Set-Content (Join-Path $installDir "config.txt") -Value $folder -NoNewline
     Write-Host "[OK] Теперь обои берутся из: $folder" -ForegroundColor Green
 }
 else {
     $newDir = Select-Folder "Выбери папку, КУДА перенести программу"
-    if (-not $newDir) { Write-Host "Отменено."; pause; exit 1 }
-    if ($newDir -eq $installDir) { Write-Host "Это та же папка. Ничего не делаем."; pause; exit 0 }
+    if (-not $newDir) { Write-Host "Отменено."; Wait-Key; exit 1 }
+    if ($newDir -eq $installDir) { Write-Host "Это та же папка. Ничего не делаем."; Wait-Key; exit 0 }
+    if ($newDir -match '^[A-Za-z]:\\?$') {
+        Write-Host "Корень диска ($newDir) не подходит — выбери или создай обычную папку." -ForegroundColor Red
+        Wait-Key; exit 1
+    }
 
-    New-Item -ItemType Directory -Force -Path $newDir | Out-Null
-    Copy-Item (Join-Path $installDir "wallpaper.ps1") $newDir -Force
-    $config = Join-Path $installDir "config.txt"
-    if (Test-Path $config) { Copy-Item $config $newDir -Force }
+    # Создаём папку, только если её нет (корень диска, напр. B:\, создавать нельзя)
+    $files = @("wallpaper.ps1", "install.ps1", "manage.ps1", "uninstall.ps1", "START.bat", "UNINSTALL.bat")
+    try {
+        if (-not (Test-Path -LiteralPath $newDir)) {
+            New-Item -ItemType Directory -Path $newDir -ErrorAction Stop | Out-Null
+        }
+        foreach ($f in $files) {
+            $src = Join-Path $installDir $f
+            if (Test-Path $src) { Copy-Item $src (Join-Path $newDir $f) -Force -ErrorAction Stop }
+        }
+        $config = Join-Path $installDir "config.txt"
+        if (Test-Path $config) { Copy-Item $config $newDir -Force -ErrorAction Stop }
+    } catch {
+        Write-Host "Ошибка переноса в $newDir" -ForegroundColor Red
+        Write-Host $_.Exception.Message
+        Wait-Key; exit 1
+    }
 
     # Перевешиваем автозагрузку на новое место
     $lnk = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\wallpaper.lnk"
@@ -58,11 +81,13 @@ else {
     $shortcut.Save()
 
     # Чистим старое место
-    Remove-Item (Join-Path $installDir "wallpaper.ps1") -Force -ErrorAction SilentlyContinue
+    foreach ($f in $files) {
+        Remove-Item (Join-Path $installDir $f) -Force -ErrorAction SilentlyContinue
+    }
     Remove-Item (Join-Path $installDir "config.txt") -Force -ErrorAction SilentlyContinue
     Remove-Item (Join-Path $installDir "last_wallpaper.txt") -Force -ErrorAction SilentlyContinue
 
     Write-Host "[OK] Программа перенесена в: $newDir" -ForegroundColor Green
     Write-Host "Автозагрузка обновлена."
 }
-pause
+Wait-Key

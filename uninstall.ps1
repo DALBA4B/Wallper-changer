@@ -1,4 +1,9 @@
-﻿# Деинсталлятор Wallpaper Changer
+﻿function Wait-Key {
+    Write-Host "Для продолжения нажми Enter..."
+    [void][System.Console]::ReadLine()
+    while ([System.Console]::KeyAvailable) { [void][System.Console]::ReadKey($true) }
+}
+# Деинсталлятор Wallpaper Changer
 $ErrorActionPreference = "Continue"
 
 # Определяем, где лежит установленная программа (там же wallpaper.ps1 + config.txt)
@@ -28,7 +33,7 @@ Write-Host ""
 $answer = Read-Host "Удалить Wallpaper Changer? (Y/N)"
 if ($answer -notmatch "^[YyДд]") {
     Write-Host "Отменено. Ничего не удалено." -ForegroundColor Yellow
-    pause
+    Wait-Key
     exit 0
 }
 
@@ -59,4 +64,4 @@ del /f /q "%~f0"
 
 Write-Host ""
 Write-Host "Готово!" -ForegroundColor Green
-pause
+Wait-Key

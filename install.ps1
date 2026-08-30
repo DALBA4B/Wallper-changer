@@ -1,4 +1,9 @@
-﻿# Установщик Wallpaper Changer: два окна выбора папок, затем всё настраивается само
+﻿function Wait-Key {
+    Write-Host "Для продолжения нажми Enter..."
+    [void][System.Console]::ReadLine()
+    while ([System.Console]::KeyAvailable) { [void][System.Console]::ReadKey($true) }
+}
+# Установщик Wallpaper Changer: два окна выбора папок, затем всё настраивается само
 Add-Type -AssemblyName System.Windows.Forms
 
 function Select-Folder($Description) {
@@ -13,20 +18,36 @@ Write-Host "Wallpaper Changer - установка" -ForegroundColor Cyan
 
 # 1. Откуда брать обои
 $wallpaperFolder = Select-Folder "Выбери папку, ОТКУДА брать картинки для обоев"
-if (-not $wallpaperFolder) { Write-Host "Отменено." -ForegroundColor Yellow; pause; exit 1 }
+if (-not $wallpaperFolder) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
 
 # 2. Куда установить программу
 $installDir = Select-Folder "Выбери папку, КУДА установить Wallpaper Changer"
-if (-not $installDir) { Write-Host "Отменено." -ForegroundColor Yellow; pause; exit 1 }
-New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+if (-not $installDir) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
 
-# Копируем основной скрипт и сохраняем конфиг
-$sourceScript = Join-Path $PSScriptRoot "wallpaper.ps1"
-$targetScript = Join-Path $installDir "wallpaper.ps1"
-if ($sourceScript -ne $targetScript) {
-    Copy-Item $sourceScript $targetScript -Force
+# Корень диска — плохое место: туда нужны права администратора и свалка файлов в корне
+if ($installDir -match '^[A-Za-z]:\\?$') {
+    Write-Host "Корень диска ($installDir) не подходит — выбери или создай обычную папку, например C:\WallpaperChanger" -ForegroundColor Red
+    Wait-Key; exit 1
 }
-Set-Content (Join-Path $installDir "config.txt") -Value $wallpaperFolder -NoNewline
+
+# Копируем все файлы программы и сохраняем конфиг
+$files = @("wallpaper.ps1", "install.ps1", "manage.ps1", "uninstall.ps1", "START.bat", "UNINSTALL.bat", "README.md")
+try {
+    New-Item -ItemType Directory -Force -Path $installDir -ErrorAction Stop | Out-Null
+    foreach ($f in $files) {
+        $src = Join-Path $PSScriptRoot $f
+        $dst = Join-Path $installDir $f
+        if ((Test-Path $src) -and ($src -ne $dst)) {
+            Copy-Item $src $dst -Force -ErrorAction Stop
+        }
+    }
+    Set-Content (Join-Path $installDir "config.txt") -Value $wallpaperFolder -NoNewline -ErrorAction Stop
+} catch {
+    Write-Host "Ошибка установки в $installDir" -ForegroundColor Red
+    Write-Host $_.Exception.Message
+    Write-Host "Возможно, нет прав на запись в эту папку. Выбери другую (например, внутри Документов или Рабочего стола)." -ForegroundColor Yellow
+    Wait-Key; exit 1
+}
 
 # Создаём скрытый ярлык в автозагрузке
 $startup = [Environment]::GetFolderPath("Startup")
@@ -42,4 +63,4 @@ Write-Host "Готово!" -ForegroundColor Green
 Write-Host "Программа установлена в: $installDir"
 Write-Host "Обои берутся из: $wallpaperFolder"
 Write-Host "Автозапуск добавлен. Обои будут меняться при каждом включении ПК."
-pause
+Wait-Key
