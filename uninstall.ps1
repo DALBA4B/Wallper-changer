@@ -46,18 +46,24 @@ if (Test-Path $lnk) {
     Write-Host "[--] Ярлык автозагрузки не найден (уже удалён?)" -ForegroundColor DarkYellow
 }
 
-# 2. Удаляем файлы программы
-if (Test-Path (Join-Path $installDir "wallpaper.ps1")) {
-    # Удаляем через внешний bat, чтобы можно было стереть папку, из которой запущен скрипт
+# 2. Удаляем файлы программы — ТОЛЬКО свои файлы по списку, папку не трогаем
+$files = @("wallpaper.ps1", "install.ps1", "manage.ps1", "uninstall.ps1",
+           "START.bat", "UNINSTALL.bat", "README.md", "config.txt", "last_wallpaper.txt")
+$targets = @()
+foreach ($f in $files) {
+    $p = Join-Path $installDir $f
+    if (Test-Path $p) { $targets += $p }
+}
+
+if ($targets.Count -gt 0) {
+    # Удаляем через внешний bat, чтобы можно было стереть и скрипт, из которого запущено удаление
     $cleanup = Join-Path $env:TEMP "wc_cleanup.bat"
-    @"
-@echo off
-timeout /t 2 /nobreak >nul
-rd /s /q "$installDir"
-del /f /q "%~f0"
-"@ | Out-File $cleanup -Encoding ascii
+    $lines = @("@echo off", "timeout /t 2 /nobreak >nul")
+    foreach ($t in $targets) { $lines += "del /f /q `"$t`"" }
+    $lines += "del /f /q `"%~f0`""
+    $lines | Out-File $cleanup -Encoding ascii
     Start-Process cmd.exe -ArgumentList "/c `"$cleanup`"" -WindowStyle Hidden
-    Write-Host "[OK] Файлы удаляются..." -ForegroundColor Green
+    Write-Host "[OK] Файлы программы удаляются ($($targets.Count) шт.)..." -ForegroundColor Green
 } else {
     Write-Host "[--] Файлы программы не найдены в $installDir" -ForegroundColor DarkYellow
 }

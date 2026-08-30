@@ -27,7 +27,23 @@ if (-not $installDir) { Write-Host "Отменено." -ForegroundColor Yellow; 
 # Корень диска — плохое место: туда нужны права администратора и свалка файлов в корне
 if ($installDir -match '^[A-Za-z]:\\?$') {
     Write-Host "Корень диска ($installDir) не подходит — выбери или создай обычную папку, например C:\WallpaperChanger" -ForegroundColor Red
-    Wait-Key; exit 1
+    pause; exit 1
+}
+
+# Запрещаем «широкие» папки: программа создаёт несколько файлов и потом должна чисто удалиться
+$forbidden = @(
+    [Environment]::GetFolderPath("Desktop"),
+    [Environment]::GetFolderPath("MyDocuments"),
+    [Environment]::GetFolderPath("UserProfile"),
+    "$env:USERPROFILE\Downloads",
+    "$env:USERPROFILE\Pictures",
+    "$env:USERPROFILE\Desktop",
+    "$env:SystemRoot"
+)
+if ($forbidden -contains $installDir.TrimEnd('\')) {
+    Write-Host "В саму папку '$installDir' ставить нельзя — там лягут файлы программы среди твоих личных." -ForegroundColor Red
+    Write-Host "Выбери или создай внутри неё отдельную подпапку (например, WallpaperChanger)." -ForegroundColor Yellow
+    pause; exit 1
 }
 
 # Копируем все файлы программы и сохраняем конфиг
