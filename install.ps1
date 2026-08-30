@@ -22,7 +22,10 @@ New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 
 # Копируем основной скрипт и сохраняем конфиг
 $sourceScript = Join-Path $PSScriptRoot "wallpaper.ps1"
-Copy-Item $sourceScript (Join-Path $installDir "wallpaper.ps1") -Force
+$targetScript = Join-Path $installDir "wallpaper.ps1"
+if ($sourceScript -ne $targetScript) {
+    Copy-Item $sourceScript $targetScript -Force
+}
 Set-Content (Join-Path $installDir "config.txt") -Value $wallpaperFolder -NoNewline
 
 # Создаём скрытый ярлык в автозагрузке
