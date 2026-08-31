@@ -50,7 +50,7 @@ else {
     if ($newDir -eq $installDir) { Write-Host "Это та же папка. Ничего не делаем."; Wait-Key; exit 0 }
     if ($newDir -match '^[A-Za-z]:\\?$') {
         Write-Host "Корень диска ($newDir) не подходит — выбери или создай обычную папку." -ForegroundColor Red
-        pause; exit 1
+        Wait-Key; exit 1
     }
     $forbidden = @(
         [Environment]::GetFolderPath("Desktop"),
@@ -62,7 +62,7 @@ else {
     )
     if ($forbidden -contains $newDir.TrimEnd('\')) {
         Write-Host "В саму папку '$newDir' переносить нельзя — выбери подпапку (например, WallpaperChanger)." -ForegroundColor Red
-        pause; exit 1
+        Wait-Key; exit 1
     }
 
     # Создаём папку, только если её нет (корень диска, напр. B:\, создавать нельзя)
