@@ -21,14 +21,14 @@ $wallpaperFolder = Select-Folder "Выбери папку, ОТКУДА брат
 if (-not $wallpaperFolder) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
 
 # 2. Куда установить программу
-$parent = Select-Folder "Выбери папку, КУДА установить Wallpaper Changer (внутри будет создана подпапка WallpaperChanger)"
+$parent = Select-Folder "Выбери папку, КУДА установить Wallpaper Changer (внутри будет создана подпапка WallperChangerFiles)"
 if (-not $parent) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
 
 # Автоматически создаём подпапку проекта внутри выбранной (чтобы не сваливать файлы в чужую папку)
-if ((Split-Path $parent -Leaf) -eq "WallpaperChanger") {
+if ((Split-Path $parent -Leaf) -eq "WallperChangerFiles") {
     $installDir = $parent
 } else {
-    $installDir = Join-Path $parent "WallpaperChanger"
+    $installDir = Join-Path $parent "WallperChangerFiles"
 }
 
 # Копируем все файлы программы и сохраняем конфиг

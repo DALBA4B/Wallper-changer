@@ -45,9 +45,9 @@ if ($Mode -eq "wallpapers") {
     Write-Host "[OK] Теперь обои берутся из: $folder" -ForegroundColor Green
 }
 else {
-    $parent = Select-Folder "Выбери папку, КУДА перенести программу (внутри будет создана подпапка WallpaperChanger)"
+    $parent = Select-Folder "Выбери папку, КУДА перенести программу (внутри будет создана подпапка WallperChangerFiles)"
     if (-not $parent) { Write-Host "Отменено."; Wait-Key; exit 1 }
-    if ((Split-Path $parent -Leaf) -eq "WallpaperChanger") { $newDir = $parent } else { $newDir = Join-Path $parent "WallpaperChanger" }
+    if ((Split-Path $parent -Leaf) -eq "WallperChangerFiles") { $newDir = $parent } else { $newDir = Join-Path $parent "WallperChangerFiles" }
     if ($newDir -eq $installDir) { Write-Host "Это та же папка. Ничего не делаем."; Wait-Key; exit 0 }
 
     # Создаём папку, если её нет
