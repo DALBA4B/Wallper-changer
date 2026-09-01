@@ -21,29 +21,14 @@ $wallpaperFolder = Select-Folder "Выбери папку, ОТКУДА брат
 if (-not $wallpaperFolder) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
 
 # 2. Куда установить программу
-$installDir = Select-Folder "Выбери папку, КУДА установить Wallpaper Changer"
-if (-not $installDir) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
+$parent = Select-Folder "Выбери папку, КУДА установить Wallpaper Changer (внутри будет создана подпапка WallpaperChanger)"
+if (-not $parent) { Write-Host "Отменено." -ForegroundColor Yellow; Wait-Key; exit 1 }
 
-# Корень диска — плохое место: туда нужны права администратора и свалка файлов в корне
-if ($installDir -match '^[A-Za-z]:\\?$') {
-    Write-Host "Корень диска ($installDir) не подходит — выбери или создай обычную папку, например C:\WallpaperChanger" -ForegroundColor Red
-    Wait-Key; exit 1
-}
-
-# Запрещаем «широкие» папки: программа создаёт несколько файлов и потом должна чисто удалиться
-$forbidden = @(
-    [Environment]::GetFolderPath("Desktop"),
-    [Environment]::GetFolderPath("MyDocuments"),
-    [Environment]::GetFolderPath("UserProfile"),
-    "$env:USERPROFILE\Downloads",
-    "$env:USERPROFILE\Pictures",
-    "$env:USERPROFILE\Desktop",
-    "$env:SystemRoot"
-)
-if ($forbidden -contains $installDir.TrimEnd('\')) {
-    Write-Host "В саму папку '$installDir' ставить нельзя — там лягут файлы программы среди твоих личных." -ForegroundColor Red
-    Write-Host "Выбери или создай внутри неё отдельную подпапку (например, WallpaperChanger)." -ForegroundColor Yellow
-    Wait-Key; exit 1
+# Автоматически создаём подпапку проекта внутри выбранной (чтобы не сваливать файлы в чужую папку)
+if ((Split-Path $parent -Leaf) -eq "WallpaperChanger") {
+    $installDir = $parent
+} else {
+    $installDir = Join-Path $parent "WallpaperChanger"
 }
 
 # Копируем все файлы программы и сохраняем конфиг

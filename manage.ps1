@@ -45,27 +45,12 @@ if ($Mode -eq "wallpapers") {
     Write-Host "[OK] Теперь обои берутся из: $folder" -ForegroundColor Green
 }
 else {
-    $newDir = Select-Folder "Выбери папку, КУДА перенести программу"
-    if (-not $newDir) { Write-Host "Отменено."; Wait-Key; exit 1 }
+    $parent = Select-Folder "Выбери папку, КУДА перенести программу (внутри будет создана подпапка WallpaperChanger)"
+    if (-not $parent) { Write-Host "Отменено."; Wait-Key; exit 1 }
+    if ((Split-Path $parent -Leaf) -eq "WallpaperChanger") { $newDir = $parent } else { $newDir = Join-Path $parent "WallpaperChanger" }
     if ($newDir -eq $installDir) { Write-Host "Это та же папка. Ничего не делаем."; Wait-Key; exit 0 }
-    if ($newDir -match '^[A-Za-z]:\\?$') {
-        Write-Host "Корень диска ($newDir) не подходит — выбери или создай обычную папку." -ForegroundColor Red
-        Wait-Key; exit 1
-    }
-    $forbidden = @(
-        [Environment]::GetFolderPath("Desktop"),
-        [Environment]::GetFolderPath("MyDocuments"),
-        [Environment]::GetFolderPath("UserProfile"),
-        "$env:USERPROFILE\Downloads",
-        "$env:USERPROFILE\Pictures",
-        "$env:SystemRoot"
-    )
-    if ($forbidden -contains $newDir.TrimEnd('\')) {
-        Write-Host "В саму папку '$newDir' переносить нельзя — выбери подпапку (например, WallpaperChanger)." -ForegroundColor Red
-        Wait-Key; exit 1
-    }
 
-    # Создаём папку, только если её нет (корень диска, напр. B:\, создавать нельзя)
+    # Создаём папку, если её нет
     $files = @("wallpaper.ps1", "install.ps1", "manage.ps1", "uninstall.ps1", "START.bat", "UNINSTALL.bat")
     try {
         if (-not (Test-Path -LiteralPath $newDir)) {
