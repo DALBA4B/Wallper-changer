@@ -51,7 +51,7 @@ else {
     if ($newDir -eq $installDir) { Write-Host "Это та же папка. Ничего не делаем."; Wait-Key; exit 0 }
 
     # Создаём папку, если её нет
-    $files = @("wallpaper.ps1", "install.ps1", "manage.ps1", "uninstall.ps1", "START.bat", "UNINSTALL.bat")
+    $files = @("wallpaper.ps1", "install.ps1", "manage.ps1", "uninstall.ps1", "START.bat", "UNINSTALL.bat", "README.md")
     try {
         if (-not (Test-Path -LiteralPath $newDir)) {
             New-Item -ItemType Directory -Path $newDir -ErrorAction Stop | Out-Null
